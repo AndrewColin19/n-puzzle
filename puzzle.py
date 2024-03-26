@@ -1,5 +1,5 @@
 class Puzzle():
-    def __init__(self, board: list[list], solution = None) -> None:
+    def __init__(self, board: list[list], solution = None, solution_row = None) -> None:
         self.board = board
         self.height = len(board)
         self.width = len(board[0])
@@ -7,6 +7,21 @@ class Puzzle():
             self.solution = solution
         else:
             self.solution = self.get_final_step()
+        self.missplaced = self._hamming()
+        self._heristic = {
+            1: self._manhattan,
+            2: self._hamming,
+        }
+        self.board_row = []
+        for row in self.board:
+            self.board_row += row
+        if not solution_row:
+            self.solution_row = []
+            for row in self.solution:
+                self.solution_row += row
+        else:
+            self.solution_row = solution_row
+
 
     def get_final_step(self):
         goal = [[0] * self.width for _ in range(self.height)]
@@ -20,16 +35,33 @@ class Puzzle():
                 n += 1
         return goal
     
-    def get_tiles_missplaced(self):
+    def _hamming(self):
         h = 0
         for i in range(self.height):
             for j in range(self.width):
-                if self.board[i][j] != self.solution[i][j]:
+                if self.board[i][j] != 0 and self.board[i][j] != self.solution[i][j]:
                     h += 1
         return h
     
+    def _manhattan(self):
+        h = 0
+        for i in range(self.height * self.width):
+            if self.board_row[i] != 0 and self.board_row[i] != self.solution_row[i]:
+                ci = self.solution_row.index(self.board_row[i])
+                y = (i // self.height) - (ci // self.height)
+                x = (i % self.width) - (ci % self.width)
+                h += abs(y) + abs(x)
+        return h
+
+    def heristic(self, n):
+        if n in self._heristic:
+            return self._heristic[n]()
+        return 0
+    
     def is_solved(self):
-        return False if self.get_tiles_missplaced() != 0 else True
+        if self.missplaced == 0:
+            return True
+        return False
     
     def get_copy(self):
         board = []
@@ -64,10 +96,10 @@ class Puzzle():
         to_y, to_x = to
         copy = self.get_copy()
         copy[at_y][at_x], copy[to_y][to_x] = copy[to_y][to_x], copy[at_y][at_x]
-        return Puzzle(copy)
+        return Puzzle(copy, solution_row=self.solution_row, solution=self.solution)
     
     def get_state(self):
-        return str(self.board)
+        return str(self.board_row)
 
     def __str__(self) -> str:
         m = (self.width * self.height) + (2 * self.width)

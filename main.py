@@ -1,3 +1,4 @@
+import time
 from solver import Solver
 from puzzle import Puzzle
 
@@ -16,36 +17,32 @@ def str_n_puzzle(boards, width, height, n=5):
         st += s
     return st
 
-def print_paths(boards, width, height):
-    size = len(boards)
-    inc = 10
-    print(end="\n\n")
-    if size / inc < 1:
-        print(str_n_puzzle(boards, width, height, size))
-    else:
-        i = 0
-        while i != size:
-            print(str_n_puzzle(boards, width, height, inc), end='')
-            if i + inc >= size:
-                inc = size - i
-                i += size - i
-            else:
-                print(end='\n\n')
-                i += inc
+def print_paths(boards):
+    for row in boards:
+        print(row)
 
 def main():
     puzzle = Puzzle([[0, 8, 5], [4, 1, 7], [2, 6, 3]])
     s = Solver(puzzle)
-    paths = s.solve()
-    
-    board = []
+    start = time.time()
+    paths, opened, closed = s.solve(2)
+    end = time.time() - start
+    boards = []
     for p in paths:
-        board.append(p.puzzle.board)
-    print(f"Solved in {len(board)} steps")
-    print_paths(board, 3, 3)
+        boards.append(p.puzzle.board_row)
+    print(f"Complexity in time: {len(opened)}")
+    print(f"Complexity in size: {len(closed)}")
+    print(f"Number of steps to solve: {len(boards)}")
+    print_paths(boards)
+    print(f"Solved in {round(end, 2)}s")
 
 if __name__=='__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("goodbye")
+    except Exception as e:
+        print(e)
 
     """
     TODO

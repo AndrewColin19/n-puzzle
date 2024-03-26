@@ -5,26 +5,32 @@ class Solver():
     def __init__(self, puzzle: Puzzle) -> None:
         self.first_step = puzzle
 
-    def a_star_solve(self):
-        queue = [Node(self.first_step)]
-        g = 0
+    def a_star_solve(self, heuristic, cost):
+        queue = [Node(self.first_step, heuristic=heuristic, cost=cost)]
+        closed = {}
+        opened = {}
         while queue:
-            g += 1
-            node = queue.pop()
-            if node.is_solved():
+            current = queue.pop()
+            if current.is_solved():
                 break
-            smart_n = None
-            for move, action in node.get_actions():
-                n = Node(move(), node, action, g)
-                if smart_n is None:
-                    smart_n = n
-                elif smart_n.f > n.f:
-                    smart_n = n
-            queue.insert(0, smart_n)
-        return node.get_path()
+            if current.state in closed:
+                 continue
+            if current.parent:
+                closed[current.parent.state] = current
+            for move, action in current.get_actions():
+                node = Node(move(), current, action, heuristic, cost=cost)
+                if node.state in closed:
+                    continue
+                if node.state in opened:
+                    n = opened[node.state]
+                    if n.g <= node.g:
+                        continue
+                queue.insert(0, node)
+                opened[node.state] = node
+        return current.get_path(), opened, closed
 
-    def solve(self, algo = None, heuristic = None):
-        return self.a_star_solve()
+    def solve(self, heuristic = 1, cost = 1):
+        return self.a_star_solve(heuristic, cost)
     
     def __str__(self) -> str:
         return self.first_step.__str__()

@@ -1,14 +1,16 @@
 from puzzle import Puzzle
 
 class Node():
-    def __init__(self, puzzle: Puzzle, parent = None, action = None, g = 1) -> None:
+    def __init__(self, puzzle: Puzzle, parent = None, action = None, heuristic = 1, cost = 1) -> None:
         self.puzzle = puzzle
         self.parent: Node = parent
+        self.g = self.parent.g + cost if self.parent is not None else 0
         self.action = action
-        self.f = self.calc_f(g)
+        self.f = self.calc_f()
+        self.state = self._state()
 
-    def calc_f(self, g = 1):
-        return g + self.puzzle.get_tiles_missplaced()
+    def calc_f(self, n = 1):
+        return self.g + self.puzzle.heristic(n)
 
     def get_path(self):
         node, p = self, []
@@ -26,7 +28,7 @@ class Node():
     def get_parent(self):
         return self.parent
 
-    def state(self):
+    def _state(self):
         return self.puzzle.get_state()
     
     def __str__(self):
