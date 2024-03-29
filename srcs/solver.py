@@ -1,5 +1,5 @@
-from puzzle import Puzzle
-from node import Node
+from srcs.puzzle import Puzzle
+from srcs.node import Node
 
 class Solver():
     def __init__(self, puzzle: Puzzle) -> None:

@@ -1,4 +1,4 @@
-from puzzle import Puzzle
+from srcs.puzzle import Puzzle
 
 class Node():
     def __init__(self, puzzle: Puzzle, parent = None, action = None, heuristic = 1, cost = 1) -> None:
