@@ -1,112 +1,103 @@
-class Puzzle():
-    def __init__(self, board: list[list], solution = None, solution_row = None) -> None:
-        self.board = board
-        self.height = len(board)
-        self.width = len(board[0])
-        if solution is not None:
-            self.solution = solution
-        else:
-            self.solution = self.get_final_step()
-        self.missplaced = self._hamming()
-        self._heristic = {
-            1: self._manhattan,
-            2: self._hamming,
-        }
-        self.board_row = []
-        for row in self.board:
-            self.board_row += row
-        if not solution_row:
-            self.solution_row = []
-            for row in self.solution:
-                self.solution_row += row
-        else:
-            self.solution_row = solution_row
+from heristic import manhattan, hamming, linear_conflicts
 
+class Puzzle():
+    def __init__(self, size: int, board: list[int], solution: list = None) -> None:
+        self.board: list[int] = board
+        self.size: int = size
+        if solution is not None:
+            self.solution: list[int] = solution
+        else:
+            self.solution: list[int] = self.get_final_step()
+        self._heristic = {
+            1: manhattan,
+            2: hamming,
+            3: linear_conflicts
+        }
+        self.solved = self._solved()
 
     def get_final_step(self):
-        goal = [[0] * self.width for _ in range(self.height)]
-        n = 1
-        m = self.width * self.height
-        for i in range(self.height):
-            for j in range(self.width):
-                if n == m:
-                    n = 0
-                goal[i][j] = n
-                n += 1
+        ts = self.size * self.size
+        goal = [-1 for _ in range(ts)]
+        cur = 1
+        x = 0
+        ix = 1
+        y = 0
+        iy = 0
+        while True:
+            goal[x + y*self.size] = cur
+            if cur == 0:
+                break
+            cur += 1
+            if x + ix == self.size or x + ix < 0 or (ix != 0 and goal[x + ix + y*self.size] != -1):
+                iy = ix
+                ix = 0
+            elif y + iy == self.size or y + iy < 0 or (iy != 0 and goal[x + (y+iy)*self.size] != -1):
+                ix = -iy
+                iy = 0
+            x += ix
+            y += iy
+            if cur == ts:
+                cur = 0
         return goal
     
-    def _hamming(self):
-        h = 0
-        for i in range(self.height):
-            for j in range(self.width):
-                if self.board[i][j] != 0 and self.board[i][j] != self.solution[i][j]:
-                    h += 1
-        return h
-    
-    def _manhattan(self):
-        h = 0
-        for i in range(self.height * self.width):
-            if self.board_row[i] != 0 and self.board_row[i] != self.solution_row[i]:
-                ci = self.solution_row.index(self.board_row[i])
-                y = (i // self.height) - (ci // self.height)
-                x = (i % self.width) - (ci % self.width)
-                h += abs(y) + abs(x)
-        return h
-
     def heristic(self, n):
         if n in self._heristic:
-            return self._heristic[n]()
+            return self._heristic[n](self.size, self.board, self.solution)
         return 0
     
-    def is_solved(self):
-        if self.missplaced == 0:
-            return True
-        return False
+    def _solved(self):
+        for i in range(self.size * self.size):
+            if self.board[i] != self.solution[i]:
+                return False
+        return True
     
     def get_copy(self):
-        board = []
-        for row in self.board:
-            board.append([x for x in row])
-        return board
-    
-    def _get_coord_zero(self):
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.board[y][x] == 0:
-                    return y, x
+        return [x for x in self.board]
     
     def get_actions(self):
-        def create(at, to, action):
-            return lambda: self.move(at, to, action)
+        def create(at, to):
+            return lambda: self.move(at, to)
         moves = []
-        y, x = self._get_coord_zero()
-        direcs = {'U': (y - 1, x), 
-                  'D': (y + 1, x),
-                  'R': (y, x + 1), 
-                  'L': (y, x - 1)}
-        for action, (r, c) in direcs.items():
-            if self.board[y][x] == 0:
-                if r >= 0 and c >= 0 and r < self.height and c < self.width:
-                    move = create((y, x), (r, c), action), action
-                    moves.append(move)
+        i = self.board.index(0)
+        m = [i + 1, i - 1, i + self.size, i - self.size]
+        for x, y in ((-1, 0), (1, 0), (0, 1), (0, -1)):
+            x = i % self.size + x 
+            y = i // self.size + y 
+            if x >= self.size or x < 0 or y < 0 or y >= self.size:
+                continue
+            move = create(i, y * self.size + x)
+            moves.append(move)
         return moves
     
-    def move(self, at: tuple[int, int], to: tuple[int, int], action):
-        at_y, at_x = at
-        to_y, to_x = to
+    def move(self, at: int, to: int):
         copy = self.get_copy()
-        copy[at_y][at_x], copy[to_y][to_x] = copy[to_y][to_x], copy[at_y][at_x]
-        return Puzzle(copy, solution_row=self.solution_row, solution=self.solution)
+        copy[at], copy[to] = copy[to], copy[at]
+        return Puzzle(self.size, copy, self.solution)
     
-    def get_state(self):
-        return str(self.board_row)
+    @property
+    def state(self):
+        return str(self.board)
+    
+    def pretty_str(self) -> str:
+        def make_sep():
+            s = "+"
+            for _ in range(self.size):
+                s += (("-" * n_digit) + "+")
+            s += "\n"
+            return s
+        m = (self.size * self.size)
+        n_digit = len(str(m)) + 2
+        s = make_sep()
+        for i in range(len(self.board)):
+            if i % self.size == 0:
+                s+= "|"
+            s += f"{str(self.board[i]).center(n_digit)}"
+            if i % self.size == self.size - 1:
+                s += "|\n"
+                s += make_sep()
+            else:
+                s += "|"
+        return s
 
     def __str__(self) -> str:
-        m = (self.width * self.height) + (2 * self.width)
-        s = ("-" * m) + "\n"
-        for l in self.board:
-            for c in l:
-                s += f"| {c} |"
-            s += "\n"
-        s += ("-" * m) + "\n"
-        return s
+        return self.state

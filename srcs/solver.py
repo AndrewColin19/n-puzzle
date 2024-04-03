@@ -1,33 +1,30 @@
-from srcs.puzzle import Puzzle
-from srcs.node import Node
+import time
+from puzzle import Puzzle
+from node import Node
+from queue import PriorityQueue
 
 class Solver():
     def __init__(self, puzzle: Puzzle) -> None:
         self.first_step = puzzle
 
     def a_star_solve(self, heuristic, cost):
-        queue = [Node(self.first_step, heuristic=heuristic, cost=cost)]
-        closed = {}
-        opened = {}
-        while queue:
-            current = queue.pop()
-            if current.is_solved():
+        queue = PriorityQueue()
+        n = Node(self.first_step, heuristic=heuristic, cost=cost)
+        queue.put(n)
+        closed = set()
+        start = time.time()
+        while not queue.empty():
+            current = queue.get()
+            if current.solved:
                 break
-            if current.state in closed:
-                 continue
-            if current.parent:
-                closed[current.parent.state] = current
-            for move, action in current.get_actions():
-                node = Node(move(), current, action, heuristic, cost=cost)
+            closed.add(current.state)
+            for move in current.actions:
+                node = Node(move(), current, heuristic, cost)
                 if node.state in closed:
-                    continue
-                if node.state in opened:
-                    n = opened[node.state]
-                    if n.g <= node.g:
-                        continue
-                queue.insert(0, node)
-                opened[node.state] = node
-        return current.get_path(), opened, closed
+                    continue 
+                queue.put(node)
+        end = time.time() - start
+        return current.get_path(), queue.qsize(), len(closed), end #path, complexity in size, complexity in time, time
 
     def solve(self, heuristic = 1, cost = 1):
         return self.a_star_solve(heuristic, cost)
