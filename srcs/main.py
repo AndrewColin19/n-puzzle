@@ -37,9 +37,6 @@ def main():
     if args.heristic <= 0 and args.heristic >= 4:
         raise Exception("Heristic must be in 1 and 3.")
     size, puzzle = parse_puzzle(args.path) if args.path else gen_puzzle(args.size if args.size else 3)
-    # puzzle = [7, 3, 6, 4, 0, 1, 2, 8, 5]
-    # for ac in Puzzle(3, puzzle).get_actions():
-    #     print(ac())
     s = Solver(Puzzle(size, puzzle))
     paths, ct, cs, t = s.solve(args.heristic)
     print(f"Complexity in time: {ct}")
