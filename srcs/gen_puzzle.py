@@ -26,7 +26,7 @@ def make_goal(size):
             cur = 0
     return goal
 
-def gen_puzzle(size: int, solvable: bool = True, iteration: int = 1000) -> tuple[int, list]:
+def gen_puzzle(size: int, solvable: bool = True, iteration: int = 1000, p = True) -> tuple[int, list]:
     def swap_empty(p: list):
         idx = p.index(0)
         poss = []
@@ -43,9 +43,11 @@ def gen_puzzle(size: int, solvable: bool = True, iteration: int = 1000) -> tuple
         p[swi] = 0
         return p
     if solvable:
-        print(f"Generate solvable puzzle size: {size}")
+        msg = f"Generate solvable puzzle size: {size}"
     else:
-        print(f"Generate unsolvable puzzle size: {size}")
+        msg = f"Generate unsolvable puzzle size: {size}"
+    if p:
+        print(msg)
     l = make_goal(size)
     for _ in range(iteration):
         l = swap_empty(l)
@@ -85,7 +87,7 @@ if __name__ == "__main__":
 		solv = False
 
 	s = args.size
-	s, puzzle = gen_puzzle(s, solv, iteration=args.iterations)
+	s, puzzle = gen_puzzle(s, solv, iteration=args.iterations, p=False)
 
 	w = len(str(s*s))
 	print("# This puzzle is %s" % ("solvable" if solv else "unsolvable"))
