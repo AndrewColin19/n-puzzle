@@ -15,7 +15,7 @@ def remove_comment(s: str):
         s = s.replace(s[start:end], '')
     return s
 
-def parse_puzzle(file_or_path: str) -> tuple[int, list]:
+def puzzle_parser(file_or_path: str) -> tuple[int, list]:
     puzzle = []
     size = 0
     with open(file_or_path) as file:

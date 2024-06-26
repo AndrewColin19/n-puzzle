@@ -1,18 +1,14 @@
-from heristic import manhattan, hamming, linear_conflicts
+from heristic import manhattan
 
 class Puzzle():
-    def __init__(self, size: int, board: list[int], solution: list = None) -> None:
+    def __init__(self, size: int, board: list[int], solution: list = None, heristic = manhattan) -> None:
         self.board: list[int] = board
         self.size: int = size
         if solution is not None:
             self.solution: list[int] = solution
         else:
             self.solution: list[int] = self.get_final_step()
-        self._heristic = {
-            1: manhattan,
-            2: hamming,
-            3: linear_conflicts
-        }
+        self._f_heristic = heristic
         self.solved = self._solved()
 
     def get_final_step(self):
@@ -40,10 +36,8 @@ class Puzzle():
                 cur = 0
         return goal
     
-    def heristic(self, n):
-        if n in self._heristic:
-            return self._heristic[n](self.size, self.board, self.solution)
-        return 0
+    def heristic(self):
+        return self._f_heristic(self.size, self.board, self.solution)
     
     def _solved(self):
         for i in range(self.size * self.size):
@@ -73,31 +67,3 @@ class Puzzle():
         copy = self.get_copy()
         copy[at], copy[to] = copy[to], copy[at]
         return Puzzle(self.size, copy, self.solution)
-    
-    @property
-    def state(self):
-        return str(self.board)
-    
-    def pretty_str(self) -> str:
-        def make_sep():
-            s = "+"
-            for _ in range(self.size):
-                s += (("-" * n_digit) + "+")
-            s += "\n"
-            return s
-        m = (self.size * self.size)
-        n_digit = len(str(m)) + 2
-        s = make_sep()
-        for i in range(len(self.board)):
-            if i % self.size == 0:
-                s+= "|"
-            s += f"{str(self.board[i]).center(n_digit)}"
-            if i % self.size == self.size - 1:
-                s += "|\n"
-                s += make_sep()
-            else:
-                s += "|"
-        return s
-
-    def __str__(self) -> str:
-        return self.state

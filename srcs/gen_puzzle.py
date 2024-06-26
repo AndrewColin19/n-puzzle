@@ -1,3 +1,4 @@
+import argparse
 import random
 
 def make_goal(size):
@@ -25,7 +26,7 @@ def make_goal(size):
             cur = 0
     return goal
 
-def gen_puzzle(size: int, solvable: bool = True) -> tuple[int, list]:
+def gen_puzzle(size: int, solvable: bool = True, iteration: int = 1000) -> tuple[int, list]:
     def swap_empty(p: list):
         idx = p.index(0)
         poss = []
@@ -46,7 +47,7 @@ def gen_puzzle(size: int, solvable: bool = True) -> tuple[int, list]:
     else:
         print(f"Generate unsolvable puzzle size: {size}")
     l = make_goal(size)
-    for _ in range(1000):
+    for _ in range(iteration):
         l = swap_empty(l)
     if not solvable:
         if l[0] == 0 or l[1] == 0:
@@ -54,3 +55,42 @@ def gen_puzzle(size: int, solvable: bool = True) -> tuple[int, list]:
         else:
             l[0], l[1] = l[1], l[0]
     return size, l
+
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+
+	parser.add_argument("size", type=int, help="Size of the puzzle's side. Must be >3.")
+	parser.add_argument("-s", "--solvable", action="store_true", default=False, help="Forces generation of a solvable puzzle. Overrides -u.")
+	parser.add_argument("-u", "--unsolvable", action="store_true", default=False, help="Forces generation of an unsolvable puzzle")
+	parser.add_argument("-i", "--iterations", type=int, default=10000, help="Number of passes")
+
+	args = parser.parse_args()
+
+	random.seed()
+
+	if args.solvable and args.unsolvable:
+		print("Can't be both solvable AND unsolvable, dummy !")
+		exit(1)
+
+	if args.size < 3:
+		print("Can't generate a puzzle with size lower than 2. It says so in the help. Dummy.")
+		exit(0)
+
+	if not args.solvable and not args.unsolvable:
+		solv = random.choice([True, False])
+	elif args.solvable:
+		solv = True
+	elif args.unsolvable:
+		solv = False
+
+	s = args.size
+	s, puzzle = gen_puzzle(s, solv, iteration=args.iterations)
+
+	w = len(str(s*s))
+	print("# This puzzle is %s" % ("solvable" if solv else "unsolvable"))
+	print("%d" % s)
+	for y in range(s):
+		for x in range(s):
+			print("%s" % (str(puzzle[x + y * s]).rjust(w)), end=' ')
+		print()

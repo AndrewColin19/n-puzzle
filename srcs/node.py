@@ -1,28 +1,30 @@
 from puzzle import Puzzle
+from typing import Self
 
 class Node():
-    def __init__(self, puzzle: Puzzle, parent = None, heuristic = 1, cost = 1) -> None:
+    def __init__(self, puzzle: Puzzle, parent = None, cost = 1) -> None:
         self.puzzle = puzzle
+        self.size = self.puzzle.size
         self.parent: Node = parent
         self.g = self.parent.g + cost if self.parent is not None else 0
-        self.f = self.g + self.puzzle.heristic(heuristic)
+        self.f = self.g + self.puzzle.heristic()
         self.actions = self.puzzle.get_actions()
         self.solved = self.puzzle.solved
-        self.state = self.puzzle.state
 
-    def get_path(self):
+    def get_path(self) -> list[Self]:
         node, p = self, []
         while node:
             p.append(node)
             node = node.parent
         p.reverse()
         return p
+
+    @property
+    def state(self) -> int:
+        return hash(str(self.puzzle.board))
     
-    def pretty_str(self):
-        return self.puzzle.pretty_str()
+    def __str__(self) -> str:
+        return str(self.puzzle.board)
     
-    def __gt__(self, other):
+    def __gt__(self, other: Self):
         return self.f > other.f
-    
-    def __str__(self):
-        return self.puzzle.__str__()
