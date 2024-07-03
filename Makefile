@@ -1,18 +1,12 @@
 NAME = n-puzzle
 SRCS = srcs
 PYTHON = python3
-PATH_PUZZLE = ${SRCS}/puzzles/generated_puzzle
+PATH_PUZZLE = ${SRCS}/puzzles/
 
 all: solvable ${NAME}
 
-solvable: ${NAME}
-	@${PYTHON} ${SRCS}/gen-puzzle.py 4 -s > ${PATH_PUZZLE};
-	
-unsolvable: ${NAME}
-	@${PYTHON} ${SRCS}/gen-puzzle.py 3 -u > ${PATH_PUZZLE};
-
 ${NAME}:
-	@${PYTHON} ${SRCS}/main.py --path ${PATH_PUZZLE} 
+	@${PYTHON} ${SRCS}/main.py -p ${PATH_PUZZLE}/3x3
 
 clean:
 	@echo clean

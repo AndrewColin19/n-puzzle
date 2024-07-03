@@ -40,7 +40,7 @@ def linear_conflicts(size: int, puzzle: tuple[int], goal: tuple[int]):
     
     return conflicts
 
-def heuristic_linear_conflicts(size: int, puzzle: tuple[int], goal: tuple[int]):
+def all(size: int, puzzle: tuple[int], goal: tuple[int]):
     return manhattan_distance(size, puzzle, goal) + 2 * linear_conflicts(size, puzzle, goal)
 
 
@@ -48,5 +48,5 @@ heristics = {
     1: manhattan_distance,
     2: hamming,
     3: linear_conflicts,
-    4: heuristic_linear_conflicts
+    4: all
 }

@@ -33,6 +33,8 @@ def puzzle_parser(file_or_path: str) -> tuple[int, list]:
                     error = True
                 size = int(rows[i])
             elif re.match(PUZZLE_REG, rows[i]):
+                if len(rows[i].split(' ')) != size:
+                    error = True
                 for v in custom_strip(rows[i]).split(' '):
                    puzzle.append(int(v))
             else:
